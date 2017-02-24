@@ -31,6 +31,7 @@ var rightout = function() {
 }
 
 var valid = function() {
+
     return /^\d+$/.test(input.value);
 }
 
