@@ -31,18 +31,38 @@
         将空气质量指数大于60的城市显示到aqi-list的列表中
         */
 
-        var list = document.getElementById('aqi-list')
+        var list = document.getElementById('aqi-list');
+        var dict = {
+            1: "一",
+            2: "二",
+            3: "三",
+            4: "四",
+            5: "五",
+            6: "六",
+            7: "七",
+            8: "八",
+            9: "九",
+            0: "零",
+        };
 
-        aqiData.sort(function (a, b) {
+        var paint = (function() {
+            var n = 1;
+            return function(a) {
+                var node = document.createElement("li");
+                node.innerHTML = '第' + dict[n++] + '名' + '：' + a.join('，');
+                list.appendChild(node);
+            }
+        })();
+
+        aqiData.filter(function(data) {
+            return data[1] > 60;
+        }).sort(function(a, b) {
             return b[1] - a[1];
-        });
+        }).map(function(data) {
+            paint(data);
+        })
 
-        for (i = 0,n = 1; i < aqiData.length && aqiData[i][1] > 60; i++) {
 
-            node = document.createElement("li");
-            node.innerHTML = n++ + ': ' +aqiData[i][0] + ',' + aqiData[i][1];
-            list.appendChild(node);
-        }
 
     })();
     </script>
