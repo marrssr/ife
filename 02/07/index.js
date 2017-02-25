@@ -1,5 +1,6 @@
 var view = document.getElementById("view");
 var map = Array.prototype.map;
+var int = setInterval();
 
 var foster = function(parent, size) {
     var arr = [];
@@ -19,8 +20,6 @@ var buildTree = function(root, level, size) {
     })
 
 }
-
-
 
 function getChildren(obj) {
     var objChild = [];
@@ -78,15 +77,22 @@ var display = function(order) {
     var t = getTree(view, order);
     var l = t.length;
     var i = 0;
-    var int = setInterval(function() {
+    window.clearInterval(int);
+    map.call(t, function(a) {
+        a.style.border = '1px solid #000';
+    });
+    int = setInterval(function() {
 
-        map.call(t, function(a) {
-            a.style.border = '1px solid #000';
-        })
 
-        t[i].style.border = '1px solid #f00';
-        i++;
-        if (i == l) window.clearInterval(int);
+        if (i < l) {
+            t[i].style.border = '1px solid #f00';
+            i++;
+        } else {
+            map.call(t, function(a) {
+                a.style.border = '1px solid #000';
+            });
+            window.clearInterval(int);
+        }
     }, 500)
 
 
