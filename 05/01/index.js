@@ -1,56 +1,142 @@
+//COLORS
+var Colors = {
+    red: 0xf25346,
+    white: 0xd8d0d1,
+    brown: 0x59332e,
+    pink: 0xF5986E,
+    brownDark: 0x23190f,
+    blue: 0x68c3c0,
+};
+// THREEJS RELATED VARIABLES
+
+var scene,
+    camera, fieldOfView, aspectRatio, nearPlane, farPlane,
+    renderer, container;
+
+//SCREEN & MOUSE VARIABLES
+
+var HEIGHT, WIDTH,
+    mousePos = {
+        x: 0,
+        y: 0
+    };
+
+//INIT THREE JS, SCREEN AND MOUSE EVENTS
+
+function createScene() {
+
+    HEIGHT = 0.6 * window.innerHeight;
+    WIDTH = 0.6 * window.innerWidth;
+
+    scene = new THREE.Scene();
+    aspectRatio = WIDTH / HEIGHT;
+    fieldOfView = 60;
+    nearPlane = 1;
+    farPlane = 10000;
+    camera = new THREE.PerspectiveCamera(
+        fieldOfView,
+        aspectRatio,
+        nearPlane,
+        farPlane
+    );
+    scene.fog = new THREE.Fog(0xf7d9aa, 100, 950);
+    camera.position.x = 100;
+    camera.position.z = 200;
+
+    camera.position.y = 100;
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+
+    renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true
+    });
+    renderer.setClearColor(0x000000);
+    renderer.setSize(WIDTH, HEIGHT);
+    renderer.shadowMap.enabled = true;
+    container = document.getElementById('world');
+    container.appendChild(renderer.domElement);
+}
+
+function createLights() {
+
+    hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, .9)
+    shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+    shadowLight.position.set(150, 350, 350);
+    shadowLight.castShadow = true;
+    shadowLight.shadow.camera.left = -400;
+    shadowLight.shadow.camera.right = 400;
+    shadowLight.shadow.camera.top = 400;
+    shadowLight.shadow.camera.bottom = -400;
+    shadowLight.shadow.camera.near = 1;
+    shadowLight.shadow.camera.far = 1000;
+    shadowLight.shadow.mapSize.width = 2048;
+    shadowLight.shadow.mapSize.height = 2048;
+
+    scene.add(hemisphereLight);
+    scene.add(shadowLight);
+}
+
+
+var car = function() {
+    this.mesh = new THREE.Object3D();
+    this.mesh.name = "car";
+
+    // Create the cabin
+    var geomCockpit = new THREE.BoxGeometry(80, 50, 50, 1, 1, 1);
+    var matCockpit = new THREE.MeshPhongMaterial({
+        color: Colors.white,
+        shading: THREE.FlatShading
+    });
+    var cockpit = new THREE.Mesh(geomCockpit, matCockpit);
+    cockpit.castShadow = true;
+    cockpit.receiveShadow = true;
+    this.mesh.add(cockpit);
+
+    // Create Engine
+    var geomWheel = new THREE.TorusGeometry(6, 3, 30, 30);
+    var matWheel = new THREE.MeshPhongMaterial({
+        color: Colors.white,
+        shading: THREE.FlatShading
+    });
+    var Wheels = [
+        [20, -25, 25],
+        [-20, -25, 25],
+        [20, -25, -25],
+        [-20, -25, -25]
+    ]
+    for (var i = 0; i < 4; i++) {
+        var wheel = new THREE.Mesh(geomWheel, matWheel);
+        wheel.position.set(Wheels[i][0], Wheels[i][1], Wheels[i][2]);
+        wheel.castShadow = true;
+        wheel.receiveShadow = true;
+        this.mesh.add(wheel);
+    }
+
+
+};
+
+function createCar() {
+    car = new car();
+    car.mesh.scale.set(1, 1, 1);
+    car.mesh.position.y = 30;
+    scene.add(car.mesh);
+}
+
+function render() {
+    renderer.render(scene, camera);
+}
+
 function init() {
     //RENDERER: 渲染器将和Canvas元素进行绑定
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(1600, 1200);
-    document.getElementsByTagName('body')[0].appendChild(renderer.domElement);
-    renderer.setClearColor(0x000000);
-
-    //SCENE: 在Three.js中添加的物体都是添加到场景中的，相当于一个大容器。
-    var scene = new THREE.Scene();
+    createScene();
+    createLights();
+    createCar()
 
     //CAMERA
-    var camera = new THREE.OrthographicCamera(-15, 15, 12, -12, 1, 50);
-    camera.position.set(3, 2, 5);
 
+    axes = new THREE.AxisHelper(100);
+    scene.add(axes);
 
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
-    scene.add(camera);
-
-    var light = new THREE.DirectionalLight();
-    light.position.set(2, 5, 3);
-
-    scene.add(light);
-
-    //OBJECTS
-    /*
-    THREE.CubeGeometry(width, height, depth, widthSegments, heightSegments, depthSegments)
-    THREE.PlaneGeometry(width, height, widthSegments, heightSegments)
-    THREE.SphereGeometry(radius, segmentsWidth, segmentsHeight, phiStart, phiLength, thetaStart, thetaLength)
-    THREE.CircleGeometry(radius, segments, thetaStart, thetaLength)
-    THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments, openEnded)
-    THREE.TetrahedronGeometry(radius, detail)
-    THREE.OctahedronGeometry(radius, detail)
-    THREE.IcosahedronGeometry(radius, detail)
-    THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc)
-    THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale)
-    */
-
-    var material = new THREE.MeshLambertMaterial({
-        color: 0xffffff
-    })
-    var cube = new THREE.Mesh(new THREE.CubeGeometry(6, 3, 3), material);
-    var torus1 = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.2, 20, 20), material);
-    var torus2 = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.2, 20, 20), material);
-    var torus3 = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.2, 20, 20), material);
-    var torus4 = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.2, 20, 20), material);
-    torus1.position.set(1.5, -1.5, 1.5);
-    torus2.position.set(-1.5, -1.5, 1.5);
-    torus3.position.set(-1.5, 1.5, 1.5);
-    torus4.position.set(-1.5, 1.5, 1.5);
-    scene.add(cube);
-    scene.add(torus1);
-    scene.add(torus2);
-
-    //RENDER
-    renderer.render(scene, camera);
+    render();
 }
